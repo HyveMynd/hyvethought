@@ -1,0 +1,19 @@
+{
+  "name": "hyvethink",
+  "version": "0.0.1",
+  "description": "A wrapper module for rethinkdb",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "HyveMynd",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^0.9.0",
+    "rethinkdb": "^1.13.0-2",
+    "underscore": "^1.6.0"
+  }
+}
