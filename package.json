@@ -1,5 +1,5 @@
 {
-  "name": "hyvethink",
+  "name": "hyvethought",
   "version": "0.0.1",
   "description": "A wrapper module for rethinkdb",
   "main": "index.js",
