@@ -8,41 +8,15 @@ var assert = require('assert');
 var Table = require("./lib/table");
 
 
-var Revision = function () {
-    var config = {};
-
-    var setConfig = function (args) {
-        assert.ok(args.db, "Db must be specified");
-        config.db = args.db;
-        config.host = args.host || 'localhost';
-        config.port = args.port || 28015;
-    };
-
-    /**
-     * Connects to the rethinkdb.
-     * @param args host, port, db (only db is required. defaults to localhost:28015
-     * @param next the rethinkdb object. Allows for fluent calls
-     */
-    this.connect = function (args, next) {
-        setConfig(args);
-        r.connect(config, function (err, conn) {
-            assert.ok(err === null, err);
-            r.db(config.db).tableList().run(conn, function (err, tables) {
-                if (!err){
-                    _.each(tables, function (table) {
-                        this[table] = new Table(config, table);
-                    });
-                }
-                next(err, this);
-            });
-        });
-    };
+var Revision = function (configuration) {
+    var config = configuration;
+    var self = this;
 
     /**
      * Open a new connection. Must have already called connect(args, next).
      * @param next
      */
-    this.openConnection = function (next) {
+    self.openConnection = function (next) {
         r.connect(config, next);
     };
 
@@ -51,7 +25,7 @@ var Revision = function () {
      * @param name name of the new database
      * @param next (err, result) result is {created: 1} if successful
      */
-    this.createDb = function (name, next) {
+    self.createDb = function (name, next) {
         r.connect({host: config.host, port: config.port}, function (err, conn) {
             assert.ok(err === null, err);
             r.dbCreate(name).run(conn, function (err, result) {
@@ -66,7 +40,7 @@ var Revision = function () {
      * @param name the database to drop
      * @param next (err, result) result is {dropped:1} is successful
      */
-    this.dropDb = function (name, next) {
+    self.dropDb = function (name, next) {
         r.connect({host: config.host, port: config.port}, function (err, conn) {
             assert.ok(err === null, err);
             r.dbDrop(name).run(conn, function (err, result) {
@@ -81,10 +55,10 @@ var Revision = function () {
      * @param tableName the table to create
      * @param callback (err, result) result contains {created:1} if successful
      */
-    this.createTable = function(tableName, callback){
-        this.openConnection(function(err,conn){
-            assert.ok(err === null,err);
-            r.tableCreate(tableName).run(conn,function(err,result){
+    self.createTable = function(tableName, callback){
+        r.connect(config, function(err,conn){
+            assert.ok(err === null, err);
+            r.tableCreate(tableName).run(conn, function(err,result){
                 conn.close();
                 callback(err, result);
             });
@@ -94,15 +68,15 @@ var Revision = function () {
     /**
      * Find whether the given table name exists in the database
      * @param tableName the table to find
-     * @param callback (err, result) result is true if the table exists
+     * @param next (err, result) result is true if the table exists
      */
-    this.tableExists = function(tableName, callback){
-        this.openConnection(function(err,conn){
-            assert.ok(err === null,err);
-            r.tableList().run(conn,function(err,tables){
-                assert.ok(err === null,err);
+    self.tableExists = function(tableName, next){
+        r.connect(config, function(err,conn){
+            assert.ok(err === null, err);
+            r.tableList().run(conn,function(err, tables){
+                assert.ok(err === null, err);
                 conn.close();
-                callback(null, _.contains(tables,tableName));
+                next(null, _.contains(tables,tableName));
             });
         });
     };
@@ -112,11 +86,11 @@ var Revision = function () {
      * @param dbName the database to find
      * @param next (err, result) result is true if the table exists
      */
-    this.dbExists = function(dbName, next){
-        this.openConnection(function(err,conn){
-            assert.ok(err === null,err);
-            r.dbList().run(conn,function(err,dbs){
-                assert.ok(err === null,err);
+    self.dbExists = function(dbName, next){
+        r.connect(config, function(err,conn){
+            assert.ok(err === null, err);
+            r.dbList().run(conn,function(err, dbs){
+                assert.ok(err === null, err);
                 conn.close();
                 next(null, _.contains(dbs,dbName));
             });
@@ -126,16 +100,13 @@ var Revision = function () {
     /**
      * Create a database and list of tables
      * @param tables the names of the tables to create
-     * @param config config options for the database
      * @param next
      */
-    this.install = function(config, tables, next){
+    self.install = function(tables, next){
         assert.ok(tables && tables.length > 0, "Be sure to set the tables array on the config");
-        this.createDb(config.db, function(err,result){
-            assert.ok(err === null, err);
-            async.each(tables, this.createTable, function(err) {
-                assert.ok(err === null,err);
-                next(err,err===null);
+        self.createDb(config.db, function(err,result){
+            async.each(tables, self.createTable, function(err) {
+                next(err, err === null);
             });
         });
     };
@@ -143,4 +114,38 @@ var Revision = function () {
     return this;
 };
 
-module.exports = new Revision();
+var Db = function () {
+    var config = {};
+    var self = this;
+
+    var setConfig = function (args) {
+        assert.ok(args.db, "Db must be specified");
+        config.db = args.db;
+        config.host = args.host || 'localhost';
+        config.port = args.port || 28015;
+    };
+
+    /**
+     * Connects to the rethinkdb. Called first
+     * @param args host, port, db (only db is required. defaults to localhost:28015
+     * @param next the rethinkdb object. Allows for fluent calls
+     */
+    self.connect = function (args, next) {
+        setConfig(args);
+        r.connect(config, function (err, conn) {
+            assert.ok(err === null, err);
+            r.db(config.db).tableList().run(conn, function (err, tables) {
+                if (!err){
+                    _.each(tables, function (table) {
+                        this[table] = new Table(config, table);
+                    });
+                }
+                next(err, new Revision(config));
+            });
+        });
+    };
+
+    return this;
+};
+
+module.exports = new Db();
