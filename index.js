@@ -35,7 +35,7 @@ var Revision = function () {
                         this[table] = new Table(config, table);
                     });
                 }
-                next(err, new Revision(config));
+                next(err, self);
             });
         });
     };
