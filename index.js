@@ -1,5 +1,5 @@
 /**
- * Created by andresmonroy on 7/22/14.
+ * Created by HyveMynd on 7/22/14.
  */
 var async = require('async');
 var _ = require('underscore')._;
@@ -8,7 +8,7 @@ var assert = require('assert');
 var Table = require("./lib/table");
 
 
-var HyveThought = function () {
+var Revision = function () {
     var config = {};
 
     var setConfig = function (args) {
@@ -30,7 +30,7 @@ var HyveThought = function () {
             r.db(config.db).tableList().run(conn, function (err, tables) {
                 if (!err){
                     _.each(tables, function (table) {
-                       this[table] = new Table(config, table);
+                        this[table] = new Table(config, table);
                     });
                 }
                 next(err, this);
@@ -126,9 +126,10 @@ var HyveThought = function () {
     /**
      * Create a database and list of tables
      * @param tables the names of the tables to create
+     * @param config config options for the database
      * @param next
      */
-    this.install = function(tables, next){
+    this.install = function(config, tables, next){
         assert.ok(tables && tables.length > 0, "Be sure to set the tables array on the config");
         this.createDb(config.db, function(err,result){
             assert.ok(err === null, err);
@@ -142,4 +143,4 @@ var HyveThought = function () {
     return this;
 };
 
-module.exports = new HyveThought();
+module.exports = new Revision();

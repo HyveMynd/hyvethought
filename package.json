@@ -1,6 +1,6 @@
 {
-  "name": "hyvethought",
-  "version": "0.0.1",
+  "name": "revision",
+  "version": "0.0.2",
   "description": "A wrapper module for rethinkdb",
   "main": "index.js",
   "directories": {
