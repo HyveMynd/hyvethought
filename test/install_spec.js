@@ -2,15 +2,18 @@
  * Created by Andres Monroy (HyveMynd) on 7/27/14.
  */
 
-var db = require('../index');
+var revision = require('../index');
 var _ = require('underscore')._;
 var assert = require('assert');
 var should = require('should');
 
 describe('Installer', function () {
 
+    var db = {};
+
     beforeEach(function (done) {
-        db.connect({ db: 'test'}, function (err, db) {
+        revision.connect({ db: 'test'}, function (err, database) {
+            db = database;
             db.dropDb('test', function (err, result) {
                 done(err);
             });
@@ -30,7 +33,7 @@ describe('Installer', function () {
                 result.should.equal(true);
             });
         });
-        
+
     });
 
     describe("functional installer", function(){

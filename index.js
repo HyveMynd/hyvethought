@@ -8,37 +8,9 @@ var assert = require('assert');
 var Table = require("./lib/table");
 
 
-var Revision = function () {
-
-    var config = {};
+var Revision = function (args) {
+    var config = args;
     var self = this;
-
-    var setConfig = function (args) {
-        assert.ok(args.db, "Db must be specified");
-        config.db = args.db;
-        config.host = args.host || 'localhost';
-        config.port = args.port || 28015;
-    };
-
-    /**
-     * Connects to the rethinkdb. Called first
-     * @param args host, port, db (only db is required. defaults to localhost:28015
-     * @param next the rethinkdb object. Allows for fluent calls
-     */
-    self.connect = function (args, next) {
-        setConfig(args);
-        r.connect(config, function (err, conn) {
-            assert.ok(err === null, err);
-            r.db(config.db).tableList().run(conn, function (err, tables) {
-                if (!err){
-                    _.each(tables, function (table) {
-                        this[table] = new Table(config, table);
-                    });
-                }
-                next(err, self);
-            });
-        });
-    };
 
     /**
      * Open a new connection. Must have already called connect(args, next).
@@ -142,4 +114,36 @@ var Revision = function () {
     return this;
 };
 
-module.exports = new Revision();
+var Connector = function () {
+    var config = {};
+    var self = this;
+
+    var setConfig = function (args) {
+        assert.ok(args.db, "Db must be specified");
+        config.db = args.db;
+        config.host = args.host || 'localhost';
+        config.port = args.port || 28015;
+    };
+
+    /**
+     * Connects to the rethinkdb. Called first
+     * @param args host, port, db (only db is required. defaults to localhost:28015
+     * @param next the rethinkdb object. Allows for fluent calls
+     */
+    self.connect = function (args, next) {
+        setConfig(args);
+        r.connect(config, function (err, conn) {
+            assert.ok(err === null, err);
+            r.db(config.db).tableList().run(conn, function (err, tables) {
+                if (!err){
+                    _.each(tables, function (table) {
+                        this[table] = new Table(config, table);
+                    });
+                }
+                next(err, new Revision(config));
+            });
+        });
+    };
+};
+
+module.exports = new Connector();
