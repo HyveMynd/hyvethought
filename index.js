@@ -139,8 +139,10 @@ var Connector = function () {
                     _.each(tables, function (table) {
                         this[table] = new Table(config, table);
                     });
+                    next(null, new Revision(config));
+                } else {
+                    next(err);
                 }
-                next(err, new Revision(config));
             });
         });
     };
