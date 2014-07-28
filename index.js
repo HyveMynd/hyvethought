@@ -31,7 +31,7 @@ var Revision = function () {
             r.db(config.db).tableList().run(conn, function (err, tables) {
                 if (!err){
                     _.each(tables, function (table) {
-                        this[table] = new Table(config, table);
+                        self[table] = new Table(config, table);
                     });
                     next(null, self);
                 } else {
@@ -146,7 +146,7 @@ var Revision = function () {
         });
     };
 
-    return this;
+    return self;
 };
 
 module.exports = new Revision();
