@@ -9,12 +9,42 @@ var Table = require("./lib/table");
 
 
 var Revision = function (args) {
-    var config = args;
+    var config = {};
     var self = this;
+
+    var setConfig = function (args) {
+        assert.ok(args.db, "Db must be specified");
+        config.db = args.db;
+        config.host = args.host || 'localhost';
+        config.port = args.port || 28015;
+    };
+    setConfig(args);
+
+    /**
+     * Connects to the rethinkdb with the given configuration arguments
+     * @param args host, port, db (only db is required. defaults to localhost:28015
+     * @param next the rethinkdb object. Allows for fluent calls
+     */
+    self.connect = function (args, next) {
+        setConfig(args);
+        r.connect(config, function (err, conn) {
+            assert.ok(err === null, err);
+            r.db(config.db).tableList().run(conn, function (err, tables) {
+                if (!err){
+                    _.each(tables, function (table) {
+                        this[table] = new Table(config, table);
+                    });
+                    next(null, self);
+                } else {
+                    next(err);
+                }
+            });
+        });
+    };
 
     /**
      * Open a new connection. Must have already called connect(args, next).
-     * @param next
+     * @param next { err, conn }
      */
     self.openConnection = function (next) {
         r.connect(config, next);
@@ -114,38 +144,4 @@ var Revision = function (args) {
     return this;
 };
 
-var Connector = function () {
-    var config = {};
-    var self = this;
-
-    var setConfig = function (args) {
-        assert.ok(args.db, "Db must be specified");
-        config.db = args.db;
-        config.host = args.host || 'localhost';
-        config.port = args.port || 28015;
-    };
-
-    /**
-     * Connects to the rethinkdb. Called first
-     * @param args host, port, db (only db is required. defaults to localhost:28015
-     * @param next the rethinkdb object. Allows for fluent calls
-     */
-    self.connect = function (args, next) {
-        setConfig(args);
-        r.connect(config, function (err, conn) {
-            assert.ok(err === null, err);
-            r.db(config.db).tableList().run(conn, function (err, tables) {
-                if (!err){
-                    _.each(tables, function (table) {
-                        this[table] = new Table(config, table);
-                    });
-                    next(null, new Revision(config));
-                } else {
-                    next(err);
-                }
-            });
-        });
-    };
-};
-
-module.exports = new Connector();
+module.exports = Revision;

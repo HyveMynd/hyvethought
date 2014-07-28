@@ -1,22 +1,17 @@
 /**
  * Created by Andres Monroy (HyveMynd) on 7/27/14.
  */
-
-var revision = require('../index');
+var config = { db: 'test' };
+var db = require('../index')(config);
 var _ = require('underscore')._;
 var assert = require('assert');
 var should = require('should');
 
 describe('Installer', function () {
 
-    var db = {};
-
     beforeEach(function (done) {
-        revision.connect({ db: 'test'}, function (err, database) {
-            db = database;
-            db.dropDb('test', function (err, result) {
-                done(err);
-            });
+        db.dropDb('test', function (err, result) {
+            done(err);
         });
     });
 
