@@ -1,6 +1,6 @@
 {
   "name": "revision",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A wrapper module for rethinkdb",
   "main": "index.js",
   "directories": {

@@ -2,7 +2,7 @@
  * Created by Andres Monroy (HyveMynd) on 7/27/14.
  */
 var config = { db: 'test' };
-var db = require('../index')(config);
+var db = require('../index');
 var _ = require('underscore')._;
 var assert = require('assert');
 var should = require('should');
@@ -34,7 +34,7 @@ describe('Installer', function () {
     describe("functional installer", function(){
 
         beforeEach(function(done){
-            db.install(['foo','bar'], function (err, result) {
+            db.install({db:'test'},['foo','bar'], function (err, result) {
                 done();
             });
         });

@@ -8,7 +8,7 @@ var assert = require('assert');
 var Table = require("./lib/table");
 
 
-var Revision = function (args) {
+var Revision = function () {
     var config = {};
     var self = this;
 
@@ -18,10 +18,9 @@ var Revision = function (args) {
         config.host = args.host || 'localhost';
         config.port = args.port || 28015;
     };
-    setConfig(args);
 
     /**
-     * Connects to the rethinkdb with the given configuration arguments
+     * Connects to the rethinkdb with the given configuration arguments. Allows accress to the table methods
      * @param args host, port, db (only db is required. defaults to localhost:28015
      * @param next the rethinkdb object. Allows for fluent calls
      */
@@ -128,11 +127,13 @@ var Revision = function (args) {
     };
 
     /**
-     * Create a database and list of tables
+     * Create a database and tables
+     * @param args configuration parameters for the database connection
      * @param tables the names of the tables to create
      * @param next
      */
-    self.install = function(tables, next){
+    self.install = function(args, tables, next){
+        setConfig(args);
         assert.ok(tables && tables.length > 0, "Be sure to set the tables array on the config");
         self.createDb(config.db, function(err,result){
             async.each(tables, self.createTable, function(err) {
@@ -148,4 +149,4 @@ var Revision = function (args) {
     return this;
 };
 
-module.exports = Revision;
+module.exports = new Revision();
