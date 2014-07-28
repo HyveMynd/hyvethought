@@ -3,6 +3,10 @@
   "version": "0.0.9",
   "description": "A wrapper module for rethinkdb",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:HyveMynd/revision.git"
+  },
   "directories": {
     "test": "test"
   },
