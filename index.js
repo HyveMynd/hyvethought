@@ -136,7 +136,11 @@ var Revision = function (args) {
         assert.ok(tables && tables.length > 0, "Be sure to set the tables array on the config");
         self.createDb(config.db, function(err,result){
             async.each(tables, self.createTable, function(err) {
-                next(err, err === null);
+                if (err){
+                    next(err);
+                } else {
+                    next(null);
+                }
             });
         });
     };
